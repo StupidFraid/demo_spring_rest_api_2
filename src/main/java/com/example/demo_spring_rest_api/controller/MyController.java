@@ -2,6 +2,7 @@ package com.example.demo_spring_rest_api.controller;
 
 import com.example.demo_spring_rest_api.model.Request;
 import com.example.demo_spring_rest_api.model.Response;
+import com.example.demo_spring_rest_api.service.ModifyRequestService;
 import com.example.demo_spring_rest_api.service.MyModifyService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +18,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyController {
 
     private final MyModifyService myModifyService;
+    private final ModifyRequestService modifyRequestService;
 
     @Autowired
-    public MyController(@Qualifier("ModifyErrorMessage") MyModifyService MyModifyService){
-        this.myModifyService = MyModifyService;
+    public MyController(@Qualifier("ModifyErrorMessage") MyModifyService myModifyService,
+                        ModifyRequestService modifyRequestService){
+        this.myModifyService = myModifyService;
+        this.modifyRequestService = modifyRequestService;
     }
 
     @PostMapping(value = "/feedback")
     public ResponseEntity<Response> feedback(@RequestBody Request request){
 
-            log.info("Входящий requst: " + String.valueOf(request));
+            log.info("Входящий request: " + String.valueOf(request));
 
             Response response = Response.builder()
                     .uid(request.getUid())
@@ -37,7 +41,9 @@ public class MyController {
                     .errorMessage("")
                     .build();
 
-            Response respnseAfterModify = myModifyService.modify(response);
+            modifyRequestService.modifyRq(request);
+
+            Response responseAfterModify = myModifyService.modify(response);
             log.info("Исходящий response: " + String.valueOf(response));
 
             return new ResponseEntity<>(response, HttpStatus.OK);
